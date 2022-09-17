@@ -1,0 +1,164 @@
+{
+  "id": 2,
+  "name": "My workflow 2",
+  "active": true,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "a22956c2-820a-495e-b4c8-a125e728494f",
+      "name": "Start",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [
+        -180,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "10eb44de-7d29-40bb-b276-d6bfedf2f6b3",
+        "options": {}
+      },
+      "id": "4bbda4e6-34c4-45bd-9f6f-8a9b83c87cd5",
+      "name": "Todoist Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        60,
+        300
+      ],
+      "webhookId": "10eb44de-7d29-40bb-b276-d6bfedf2f6b3",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$node[\"Todoist Webhook\"].json[\"body\"][\"event_data\"][\"project_id\"]}}",
+              "value2": "={{\"2237661874\"}}"
+            },
+            {
+              "value1": "={{$node[\"Todoist Webhook\"].json[\"body\"][\"event_data\"][\"section_id\"]}}",
+              "value2": "={{\"101103192\"}}"
+            }
+          ]
+        }
+      },
+      "id": "a7b9dc52-bf81-4714-92bc-71215e5d7460",
+      "name": "IF",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        480,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "project": "10001",
+        "issueType": "10006",
+        "summary": "={{$node[\"Todoist Webhook\"].json[\"body\"][\"event_data\"][\"content\"]}}",
+        "additionalFields": {
+          "description": "={{$node[\"Todoist Webhook\"].json[\"body\"][\"event_data\"][\"description\"]}}"
+        }
+      },
+      "id": "4177e45d-180b-4852-82a2-77bb1da5762f",
+      "name": "Jira",
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        700,
+        280
+      ],
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "3",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{$node[\"Todoist Webhook\"].json[\"body\"][\"event_name\"]}}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "={{\"item:added\"}}",
+              "output": 1
+            },
+            {
+              "value2": "={{\"item:completed\"}}",
+              "output": 2
+            },
+            {
+              "value2": "={{\"item:deleted\"}}",
+              "output": 3
+            },
+            {
+              "value2": "={{\"item:updated\"}}",
+              "output": 3
+            },
+            {
+              "value2": "={{\"item:uncompleted\"}}",
+              "output": 3
+            }
+          ]
+        },
+        "fallbackOutput": 0
+      },
+      "id": "d04ce3d5-2267-45c7-af73-4824ae4f915e",
+      "name": "Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Todoist Webhook": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF": {
+      "main": [
+        [
+          {
+            "node": "Jira",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [],
+        [
+          {
+            "node": "IF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "createdAt": "2022-09-15T15:53:12.117Z",
+  "updatedAt": "2022-09-16T20:19:10.798Z",
+  "settings": {},
+  "staticData": null,
+  "pinData": {},
+  "tags": []
+}
