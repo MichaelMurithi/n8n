@@ -1,0 +1,40 @@
+{
+  "id": 1,
+  "name": "My workflow",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "c36ed717-9255-45e7-8f17-1e32e956dc48",
+      "name": "Start",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "path": "3b2ac7d9-864c-4fbf-a092-1afe0498efe5",
+        "options": {}
+      },
+      "id": "c348b4ef-ebaa-43e0-9286-338869e4412c",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        460,
+        300
+      ],
+      "webhookId": "3b2ac7d9-864c-4fbf-a092-1afe0498efe5"
+    }
+  ],
+  "connections": {},
+  "createdAt": "2022-09-15T15:32:06.067Z",
+  "updatedAt": "2022-09-15T15:32:06.067Z",
+  "settings": {},
+  "staticData": null,
+  "pinData": {},
+  "tags": []
+}
