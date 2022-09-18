@@ -1,7 +1,7 @@
 {
   "id": 1,
   "name": "Sync sections in a Todoist project with epics in Jira for blog project",
-  "active": true,
+  "active": false,
   "nodes": [
     {
       "parameters": {},
@@ -10,36 +10,7 @@
       "type": "n8n-nodes-base.start",
       "typeVersion": 1,
       "position": [
-        -760,
-        300
-      ]
-    },
-    {
-      "parameters": {
-        "values": {
-          "string": [
-            {
-              "name": "projectId",
-              "value": "2295569313"
-            },
-            {
-              "name": "projectName",
-              "value": "The missing demos"
-            },
-            {
-              "name": "issueTypeId",
-              "value": "1006"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "29534994-5366-4833-96f3-192a054d57e3",
-      "name": "Globals",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 1,
-      "position": [
-        -440,
+        -800,
         300
       ]
     },
@@ -85,10 +56,193 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
       "position": [
-        -600,
+        -620,
         300
       ],
       "webhookId": "3b2ac7d9-864c-4fbf-a092-1afe0498efe5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$node[\"Series flow settings\"].json[\"body\"][\"event_name\"]}}",
+              "value2": "={{\"section:added\"}}"
+            }
+          ]
+        }
+      },
+      "id": "5403f5ae-fc19-4b5f-b93d-783da4f667d0",
+      "name": "Check if is section add event",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -60,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "//Get the updated todoist section ID\nconst section_id = $item(0).$node[\"Globals\"].json[\"body\"][\"event_data\"][\"id\"]\nconst issue_type_id = $item(0).$node[\"Globals\"].json[\"issueTypeId\"]\n\n//Filter only article serries from the JIRA issues response.\nitems.filter(item => item.json.fields.issuetype.id === issue_type_id);\n\n//Get the article serries that was updated from todoist.\nlet item = items.filter(item => item.json.fields.customfield_10039 === section_id);\n\n// You can write logs to the browser console\nconsole.log('Done getting the updated article series!');\n\nreturn item[0].json;"
+      },
+      "id": "b81ae0c2-e5fd-4063-a9b5-c36913317a18",
+      "name": "Get Jira issue by Todoist ID",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        280,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$node[\"Todoist Event1\"].json[\"body\"][\"event_data\"][\"project_id\"]}}",
+              "value2": "={{$node[\"Article flow settings\"].json[\"projectId\"]}}"
+            },
+            {
+              "value1": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"parent_id\"]}}",
+              "value2": "={{null}}"
+            }
+          ]
+        }
+      },
+      "id": "07525151-0394-4ded-a0d0-344fd77ad01c",
+      "name": "Filter only new article events",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -260,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$node[\"Article flow settings\"].json[\"body\"][\"event_name\"]}}",
+              "value2": "={{\"item:added\"}}"
+            }
+          ]
+        }
+      },
+      "id": "d313d9de-2958-4d5b-a2a1-b2d4e7a929e2",
+      "name": "Check if is a new article task has been added",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -60,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "value1": "={{$node[\"Todoist Event1\"].json[\"body\"][\"event_name\"]}}",
+        "rules": {
+          "rules": [
+            {
+              "operation": "=equal",
+              "value2": "={{\"item:added\"}}"
+            },
+            {
+              "operation": "equal",
+              "value2": "={{\"item:updated\"}}",
+              "output": 1
+            },
+            {
+              "operation": "equal",
+              "value2": "={{\"item:deleted\"}}",
+              "output": 2
+            }
+          ]
+        }
+      },
+      "id": "5cab89b0-0e41-42f1-900a-eb957bdfd0e3",
+      "name": "Switch1",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        460,
+        880
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "returnAll": true,
+        "options": {}
+      },
+      "id": "18384e47-9e6f-4912-8ddd-c4ec76f784d2",
+      "name": "Jira5",
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        100,
+        1080
+      ],
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "8",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "//Get the updated todoist section ID\nconst section_id = $item(0).$node[\"Globals\"].json[\"body\"][\"event_data\"][\"id\"]\nconst issue_type_id = $item(0).$node[\"Globals\"].json[\"issueTypeId\"]\n\n//Filter only article serries from the JIRA issues response.\nitems.filter(item => item.json.fields.issuetype.id === issue_type_id);\n\n//Get the article serries that was updated from todoist.\nlet item = items.filter(item => item.json.fields.customfield_10040 === section_id);\n\n// You can write logs to the browser console\nconsole.log('Done getting the updated article task!');\n\nreturn item[0].json;"
+      },
+      "id": "d79ce400-a625-4453-ad4b-d4ecbbfe78f0",
+      "name": "Get Jira issue by Todoist ID1",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        280,
+        1080
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"project_id\"]}}",
+              "value2": "={{$node[\"Series flow settings\"].json[\"projectId\"]}}"
+            }
+          ]
+        }
+      },
+      "id": "29558799-493a-471d-9403-9f7eace2e88c",
+      "name": "Filter only new article series events",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -260,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "returnAll": true,
+        "options": {}
+      },
+      "id": "5cac117a-6fa8-46a8-ad03-cbf26d805bf9",
+      "name": "Get all Jira issues",
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        80,
+        500
+      ],
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "8",
+          "name": "Jira SW Cloud account"
+        }
+      }
     },
     {
       "parameters": {
@@ -107,7 +261,7 @@
         }
       },
       "id": "14ea6528-7591-4547-9be2-9a907a6cc21b",
-      "name": "Jira",
+      "name": "Create a new article series in Jira",
       "type": "n8n-nodes-base.jira",
       "typeVersion": 1,
       "position": [
@@ -117,84 +271,10 @@
       "alwaysOutputData": true,
       "credentials": {
         "jiraSoftwareCloudApi": {
-          "id": "5",
-          "name": "Jira SW Cloud account 2"
+          "id": "8",
+          "name": "Jira SW Cloud account"
         }
       }
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "boolean": [
-            {
-              "value1": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"project_id\"]}}",
-              "value2": "={{$node[\"Globals\"].json[\"projectId\"]}}"
-            }
-          ]
-        }
-      },
-      "id": "29558799-493a-471d-9403-9f7eace2e88c",
-      "name": "Filter only technical writing events",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
-      "position": [
-        -280,
-        300
-      ]
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "boolean": [
-            {
-              "value1": "={{$node[\"Globals\"].json[\"body\"][\"event_name\"]}}",
-              "value2": "={{\"section:added\"}}"
-            }
-          ]
-        }
-      },
-      "id": "5403f5ae-fc19-4b5f-b93d-783da4f667d0",
-      "name": "Check if is section add event",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
-      "position": [
-        -100,
-        300
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "getAll",
-        "returnAll": true,
-        "options": {}
-      },
-      "id": "5cac117a-6fa8-46a8-ad03-cbf26d805bf9",
-      "name": "Jira1",
-      "type": "n8n-nodes-base.jira",
-      "typeVersion": 1,
-      "position": [
-        80,
-        500
-      ],
-      "credentials": {
-        "jiraSoftwareCloudApi": {
-          "id": "6",
-          "name": "Jira SW Cloud account 3"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "functionCode": "//Get the updated todoist section ID\nconst section_id = $item(0).$node[\"Globals\"].json[\"body\"][\"event_data\"][\"id\"]\nconst issue_type_id = $item(0).$node[\"Globals\"].json[\"issueTypeId\"]\n\n//Filter only article serries from the JIRA issues response.\nitems.filter(item => item.json.fields.issuetype.id === issue_type_id);\n\n//Get the article serries that was updated from todoist.\nlet item = items.filter(item => item.json.fields.customfield_10039 === section_id);\n\n// You can write logs to the browser console\nconsole.log('Done getting the updated article series!');\n\nreturn item[0].json;"
-      },
-      "id": "b81ae0c2-e5fd-4063-a9b5-c36913317a18",
-      "name": "Get Jira issue by Todoist ID",
-      "type": "n8n-nodes-base.function",
-      "typeVersion": 1,
-      "position": [
-        280,
-        500
-      ]
     },
     {
       "parameters": {
@@ -205,7 +285,7 @@
         }
       },
       "id": "9b04bf20-ce06-4c02-9c96-cfe88271d3f5",
-      "name": "Jira2",
+      "name": "Update an article series in Jira",
       "type": "n8n-nodes-base.jira",
       "typeVersion": 1,
       "position": [
@@ -214,8 +294,8 @@
       ],
       "credentials": {
         "jiraSoftwareCloudApi": {
-          "id": "6",
-          "name": "Jira SW Cloud account 3"
+          "id": "8",
+          "name": "Jira SW Cloud account"
         }
       }
     },
@@ -226,7 +306,7 @@
         "deleteSubtasks": true
       },
       "id": "3aa0f21c-f563-4903-b6c5-a0438d581009",
-      "name": "Jira3",
+      "name": "Delete an article series in Jira",
       "type": "n8n-nodes-base.jira",
       "typeVersion": 1,
       "position": [
@@ -235,29 +315,399 @@
       ],
       "credentials": {
         "jiraSoftwareCloudApi": {
-          "id": "6",
-          "name": "Jira SW Cloud account 3"
+          "id": "8",
+          "name": "Jira SW Cloud account"
         }
       }
+    },
+    {
+      "parameters": {
+        "project": "10001",
+        "issueType": "10013",
+        "summary": "={{$node[\"Todoist Event1\"].json[\"body\"][\"event_data\"][\"content\"]}}",
+        "additionalFields": {
+          "description": "={{$node[\"Todoist Event1\"].json[\"body\"][\"event_data\"][\"description\"]}}",
+          "customFieldsUi": {
+            "customFieldsValues": [
+              {
+                "fieldId": "customfield_10035",
+                "fieldValue": "={{$node[\"Todoist Event1\"].json[\"body\"][\"event_data\"][\"section_id\"]}}"
+              },
+              {
+                "fieldId": "customfield_10040",
+                "fieldValue": "={{$node[\"Todoist Event1\"].json[\"body\"][\"event_data\"][\"id\"]}}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "b6ababee-fc38-487e-b95a-84db6668964f",
+      "name": "Create a new article story in Jira",
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        680,
+        680
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "8",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "issueKey": "={{$node[\"Get Jira issue by Todoist ID1\"].json[\"key\"]}}",
+        "updateFields": {
+          "description": "={{$node[\"Todoist Event1\"].json[\"body\"][\"event_data\"][\"description\"]}}",
+          "summary": "={{$node[\"Todoist Event1\"].json[\"body\"][\"event_data\"][\"content\"]}}"
+        }
+      },
+      "id": "f97078a1-4855-4547-b7e0-f34ae0422113",
+      "name": "Update an article story in Jira",
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        680,
+        860
+      ],
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "8",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "issueKey": "={{$node[\"Get Jira issue by Todoist ID1\"].json[\"key\"]}}",
+        "deleteSubtasks": true
+      },
+      "id": "25425e28-dd98-4a02-9993-ec7e04ddd3b8",
+      "name": "Delete an article story in Jira",
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        680,
+        1040
+      ],
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "8",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"project_id\"]}}",
+              "value2": "={{$node[\"Series flow settings\"].json[\"projectId\"]}}"
+            },
+            {
+              "value1": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"parent_id\"]}}",
+              "operation": "notEqual",
+              "value2": "={{null}}"
+            }
+          ]
+        }
+      },
+      "id": "22fa93d2-11c3-49ce-8562-9d63cabc8fa8",
+      "name": "Filter only new article series events1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        -440
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$node[\"Series flow settings\"].json[\"body\"][\"event_name\"]}}",
+              "value2": "={{\"section:added\"}}"
+            }
+          ]
+        }
+      },
+      "id": "5f68a8c8-1e62-4080-8e8a-7617e7e3d838",
+      "name": "Check if is section add event1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -60,
+        -440
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "returnAll": true,
+        "options": {}
+      },
+      "id": "c8a319b5-f18d-45ed-af23-5b648f3b8362",
+      "name": "Get all Jira issues1",
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        80,
+        -160
+      ],
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "8",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "//Get the updated todoist section ID\nconst section_id = $item(0).$node[\"Globals\"].json[\"body\"][\"event_data\"][\"id\"]\nconst issue_type_id = $item(0).$node[\"Globals\"].json[\"issueTypeId\"]\n\n//Filter only article serries from the JIRA issues response.\nitems.filter(item => item.json.fields.issuetype.id === issue_type_id);\n\n//Get the article serries that was updated from todoist.\nlet item = items.filter(item => item.json.fields.customfield_10039 === section_id);\n\n// You can write logs to the browser console\nconsole.log('Done getting the updated article series!');\n\nreturn item[0].json;"
+      },
+      "id": "47ae3114-7dfb-454c-b7b8-8705266a9ee0",
+      "name": "Get Jira issue by Todoist ID2",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        260,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "value1": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_name\"]}}",
+        "rules": {
+          "rules": [
+            {
+              "operation": "=equal",
+              "value2": "={{\"section:added\"}}"
+            },
+            {
+              "operation": "equal",
+              "value2": "={{\"section:updated\"}}",
+              "output": 1
+            },
+            {
+              "operation": "equal",
+              "value2": "={{\"section:deleted\"}}",
+              "output": 2
+            }
+          ]
+        }
+      },
+      "id": "66f09930-c5a4-4fd9-94c7-cca090082611",
+      "name": "Switch2",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        420,
+        -460
+      ]
+    },
+    {
+      "parameters": {
+        "project": "10001",
+        "issueType": "10005",
+        "summary": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"name\"]}}",
+        "additionalFields": {
+          "description": "",
+          "customFieldsUi": {
+            "customFieldsValues": [
+              {
+                "fieldId": "customfield_10039",
+                "fieldValue": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"id\"]}}"
+              },
+              {
+                "fieldId": "customfield_10038"
+              },
+              {
+                "fieldId": "customfield_10037"
+              }
+            ]
+          }
+        }
+      },
+      "id": "8efdad00-5720-4785-b345-e3fef86e5dbf",
+      "name": "Create a new article series in Jira1",
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        660,
+        -920
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "8",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "project": "10001",
+        "issueType": "10006",
+        "summary": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"name\"]}}",
+        "additionalFields": {
+          "customFieldsUi": {
+            "customFieldsValues": [
+              {
+                "fieldId": "customfield_10039",
+                "fieldValue": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"id\"]}}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "a6687100-b4c9-4bd9-8aea-eaa31e78c3b4",
+      "name": "Create a new article series in Jira2",
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        660,
+        -720
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "8",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "issueKey": "={{$node[\"Get Jira issue by Todoist ID\"].json[\"key\"]}}",
+        "deleteSubtasks": true
+      },
+      "id": "2a4db5db-8383-4c55-8191-f4bee6481bbc",
+      "name": "Delete an article series in Jira1",
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        660,
+        -520
+      ],
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "8",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "projectId",
+              "value": "2295569313"
+            },
+            {
+              "name": "projectName",
+              "value": "The missing demos"
+            },
+            {
+              "name": "issueTypeId",
+              "value": "10005"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7bdbabd7-33bd-45e7-8f2d-e5bc0a46cfb9",
+      "name": "Task flow settings",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        -440
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "projectId",
+              "value": "2295569313"
+            },
+            {
+              "name": "projectName",
+              "value": "The missing demos"
+            },
+            {
+              "name": "issueTypeId",
+              "value": "1006"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "29534994-5366-4833-96f3-192a054d57e3",
+      "name": "Series flow settings",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        -440,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "projectId",
+              "value": "2295569313"
+            },
+            {
+              "name": "projectName",
+              "value": "The missing demos"
+            },
+            {
+              "name": "issueTypeId",
+              "value": "10013"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "52c7b7d7-e533-4ca8-9cdd-deaaf21fa569",
+      "name": "Article flow settings",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        -440,
+        900
+      ]
     }
   ],
   "connections": {
-    "Globals": {
-      "main": [
-        [
-          {
-            "node": "Filter only technical writing events",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Todoist Event": {
       "main": [
         [
           {
-            "node": "Globals",
+            "node": "Series flow settings",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Article flow settings",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Task flow settings",
             "type": "main",
             "index": 0
           }
@@ -268,32 +718,21 @@
       "main": [
         [
           {
-            "node": "Jira",
+            "node": "Create a new article series in Jira",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Jira2",
+            "node": "Update an article series in Jira",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Jira3",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Filter only technical writing events": {
-      "main": [
-        [
-          {
-            "node": "Check if is section add event",
+            "node": "Delete an article series in Jira",
             "type": "main",
             "index": 0
           }
@@ -311,18 +750,7 @@
         ],
         [
           {
-            "node": "Jira1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Jira1": {
-      "main": [
-        [
-          {
-            "node": "Get Jira issue by Todoist ID",
+            "node": "Get all Jira issues",
             "type": "main",
             "index": 0
           }
@@ -339,12 +767,238 @@
           }
         ]
       ]
+    },
+    "Filter only new article events": {
+      "main": [
+        [
+          {
+            "node": "Check if is a new article task has been added",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if is a new article task has been added": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Jira5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Create a new article story in Jira",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update an article story in Jira",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delete an article story in Jira",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Jira5": {
+      "main": [
+        [
+          {
+            "node": "Get Jira issue by Todoist ID1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Jira issue by Todoist ID1": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter only new article series events": {
+      "main": [
+        [
+          {
+            "node": "Check if is section add event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get all Jira issues": {
+      "main": [
+        [
+          {
+            "node": "Get Jira issue by Todoist ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter only new article series events1": {
+      "main": [
+        [
+          {
+            "node": "Check if is section add event1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get all Jira issues1": {
+      "main": [
+        [
+          {
+            "node": "Get Jira issue by Todoist ID2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if is section add event1": {
+      "main": [
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get all Jira issues1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Jira issue by Todoist ID2": {
+      "main": [
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "Create a new article series in Jira1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create a new article series in Jira2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delete an article series in Jira1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Task flow settings": {
+      "main": [
+        [
+          {
+            "node": "Filter only new article series events1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Series flow settings": {
+      "main": [
+        [
+          {
+            "node": "Filter only new article series events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Article flow settings": {
+      "main": [
+        [
+          {
+            "node": "Filter only new article events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "createdAt": "2022-09-15T15:32:06.067Z",
-  "updatedAt": "2022-09-18T13:19:43.165Z",
+  "updatedAt": "2022-09-18T15:54:25.813Z",
   "settings": {},
   "staticData": null,
   "pinData": {},
-  "tags": []
+  "tags": [
+    {
+      "id": "1",
+      "name": "todoist",
+      "createdAt": "2022-09-18T14:22:35.510Z",
+      "updatedAt": "2022-09-18T14:22:35.510Z"
+    },
+    {
+      "id": "2",
+      "name": "jira",
+      "createdAt": "2022-09-18T14:22:42.327Z",
+      "updatedAt": "2022-09-18T14:22:42.327Z"
+    },
+    {
+      "id": "3",
+      "name": "blog",
+      "createdAt": "2022-09-18T14:22:52.109Z",
+      "updatedAt": "2022-09-18T14:22:52.109Z"
+    }
+  ]
 }
