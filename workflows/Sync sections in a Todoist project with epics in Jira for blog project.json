@@ -83,7 +83,7 @@
     },
     {
       "parameters": {
-        "functionCode": "//Get the updated todoist section ID\nconst section_id = $item(0).$node[\"Globals\"].json[\"body\"][\"event_data\"][\"id\"]\nconst issue_type_id = $item(0).$node[\"Globals\"].json[\"issueTypeId\"]\n\n//Filter only article serries from the JIRA issues response.\nitems.filter(item => item.json.fields.issuetype.id === issue_type_id);\n\n//Get the article serries that was updated from todoist.\nlet item = items.filter(item => item.json.fields.customfield_10039 === section_id);\n\n// You can write logs to the browser console\nconsole.log('Done getting the updated article series!');\n\nreturn item[0].json;"
+        "functionCode": "//Get the updated todoist section ID\nconst section_id = $item(0).$node[\"Series flow settings\"].json[\"body\"][\"event_data\"][\"id\"]\nconst issue_type_id = $item(0).$node[\"Series flow settings\"].json[\"issueTypeId\"]\n\n//Filter only article serries from the JIRA issues response.\nitems.filter(item => item.json.fields.issuetype.id === issue_type_id);\n\n//Get the article serries that was updated from todoist.\nlet item = items.filter(item => item.json.fields.customfield_10039 === section_id);\n\n// You can write logs to the browser console\nconsole.log('Done getting the updated article series!');\n\nreturn item[0].json;"
       },
       "id": "b81ae0c2-e5fd-4063-a9b5-c36913317a18",
       "name": "Get Jira issue by Todoist ID",
@@ -189,10 +189,6 @@
             {
               "value1": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"project_id\"]}}",
               "value2": "={{$node[\"Series flow settings\"].json[\"projectId\"]}}"
-            },
-            {
-              "value1": "={{$json[\"body\"][\"event_data\"][\"parent_id\"]}}",
-              "value2": "={{null}}"
             }
           ],
           "string": [
@@ -603,6 +599,13 @@
               "value1": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"parent_id\"]}}",
               "operation": "notEqual",
               "value2": "={{null}}"
+            }
+          ],
+          "string": [
+            {
+              "value1": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_name\"]}}",
+              "operation": "contains",
+              "value2": "item"
             }
           ]
         }
@@ -1088,7 +1091,7 @@
     }
   },
   "createdAt": "2022-09-15T15:32:06.067Z",
-  "updatedAt": "2022-09-18T18:55:37.363Z",
+  "updatedAt": "2022-09-18T20:22:02.345Z",
   "settings": {},
   "staticData": null,
   "pinData": {},
