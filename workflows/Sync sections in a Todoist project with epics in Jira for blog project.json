@@ -99,7 +99,7 @@
         "conditions": {
           "boolean": [
             {
-              "value1": "={{$node[\"Todoist Event1\"].json[\"body\"][\"event_data\"][\"project_id\"]}}",
+              "value1": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"project_id\"]}}",
               "value2": "={{$node[\"Article flow settings\"].json[\"projectId\"]}}"
             },
             {
@@ -134,13 +134,13 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [
-        400,
+        260,
         900
       ]
     },
     {
       "parameters": {
-        "value1": "={{$node[\"Todoist Event1\"].json[\"body\"][\"event_name\"]}}",
+        "value1": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_name\"]}}",
         "rules": {
           "rules": [
             {
@@ -171,7 +171,7 @@
     },
     {
       "parameters": {
-        "functionCode": "//Get the updated todoist section ID\nconst section_id = $item(0).$node[\"Globals\"].json[\"body\"][\"event_data\"][\"id\"]\nconst issue_type_id = $item(0).$node[\"Globals\"].json[\"issueTypeId\"]\n\n//Filter only article serries from the JIRA issues response.\nitems.filter(item => item.json.fields.issuetype.id === issue_type_id);\n\n//Get the article serries that was updated from todoist.\nlet item = items.filter(item => item.json.fields.customfield_10040 === section_id);\n\n// You can write logs to the browser console\nconsole.log('Done getting the updated article task!');\n\nreturn item[0].json;"
+        "functionCode": "//Get the updated todoist section ID\nconst section_id = $item(0).$node[\"Article flow settings\"].json[\"body\"][\"event_data\"][\"id\"]\nconst issue_type_id = $item(0).$node[\"Article flow settings\"].json[\"issueTypeId\"]\n\n//Filter only article serries from the JIRA issues response.\nitems.filter(item => item.json.fields.issuetype.id === issue_type_id);\n\n//Get the article serries that was updated from todoist.\nlet item = items.filter(item => item.json.fields.customfield_10040 === section_id);\n\n// You can write logs to the browser console\nconsole.log('Done getting the updated article task!');\n\nreturn item[0].json;"
       },
       "id": "d79ce400-a625-4453-ad4b-d4ecbbfe78f0",
       "name": "Get Jira issue by Todoist ID1",
@@ -193,6 +193,13 @@
             {
               "value1": "={{$json[\"body\"][\"event_data\"][\"parent_id\"]}}",
               "value2": "={{null}}"
+            }
+          ],
+          "string": [
+            {
+              "value1": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_name\"]}}",
+              "operation": "contains",
+              "value2": "section"
             }
           ]
         }
@@ -307,21 +314,22 @@
       "parameters": {
         "project": "10001",
         "issueType": "10013",
-        "summary": "={{$node[\"Todoist Event1\"].json[\"body\"][\"event_data\"][\"content\"]}}",
+        "summary": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"content\"]}}",
         "additionalFields": {
-          "description": "={{$node[\"Todoist Event1\"].json[\"body\"][\"event_data\"][\"description\"]}}",
+          "description": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"description\"]}}",
           "customFieldsUi": {
             "customFieldsValues": [
               {
                 "fieldId": "customfield_10035",
-                "fieldValue": "={{$node[\"Todoist Event1\"].json[\"body\"][\"event_data\"][\"section_id\"]}}"
+                "fieldValue": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"section_id\"]}}"
               },
               {
                 "fieldId": "customfield_10040",
-                "fieldValue": "={{$node[\"Todoist Event1\"].json[\"body\"][\"event_data\"][\"id\"]}}"
+                "fieldValue": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"id\"]}}"
               }
             ]
-          }
+          },
+          "parentIssueKey": "={{$node[\"Get article series in Jira by Todoist ID1\"].json[\"key\"]}}"
         }
       },
       "id": "b6ababee-fc38-487e-b95a-84db6668964f",
@@ -345,8 +353,21 @@
         "operation": "update",
         "issueKey": "={{$node[\"Get Jira issue by Todoist ID1\"].json[\"key\"]}}",
         "updateFields": {
-          "description": "={{$node[\"Todoist Event1\"].json[\"body\"][\"event_data\"][\"description\"]}}",
-          "summary": "={{$node[\"Todoist Event1\"].json[\"body\"][\"event_data\"][\"content\"]}}"
+          "description": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"description\"]}}",
+          "customFieldsUi": {
+            "customFieldsValues": [
+              {
+                "fieldId": "customfield_10040",
+                "fieldValue": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"id\"]}}"
+              },
+              {
+                "fieldId": "customfield_10035",
+                "fieldValue": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"section_id\"]}}"
+              }
+            ]
+          },
+          "parentIssueKey": "={{$node[\"Get article series in Jira by Todoist ID1\"].json[\"key\"]}}",
+          "summary": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"content\"]}}"
         }
       },
       "id": "f97078a1-4855-4547-b7e0-f34ae0422113",
@@ -452,27 +473,6 @@
     },
     {
       "parameters": {
-        "operation": "update",
-        "updateFields": {}
-      },
-      "id": "a6687100-b4c9-4bd9-8aea-eaa31e78c3b4",
-      "name": "Create a new article series in Jira2",
-      "type": "n8n-nodes-base.jira",
-      "typeVersion": 1,
-      "position": [
-        1120,
-        -660
-      ],
-      "alwaysOutputData": true,
-      "credentials": {
-        "jiraSoftwareCloudApi": {
-          "id": "8",
-          "name": "Jira SW Cloud account"
-        }
-      }
-    },
-    {
-      "parameters": {
         "operation": "delete",
         "issueKey": "={{$node[\"Get Jira issue by Todoist ID\"].json[\"key\"]}}",
         "deleteSubtasks": true
@@ -573,6 +573,10 @@
             {
               "name": "issueTypeId",
               "value": "10013"
+            },
+            {
+              "name": "seriesTypeId",
+              "value": "1006"
             }
           ]
         },
@@ -654,7 +658,8 @@
                 "fieldValue": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"id\"]}}"
               }
             ]
-          }
+          },
+          "parentIssueKey": "="
         }
       },
       "id": "8efdad00-5720-4785-b345-e3fef86e5dbf",
@@ -682,8 +687,8 @@
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
       "position": [
-        260,
-        -460
+        40,
+        -340
       ]
     },
     {
@@ -695,8 +700,8 @@
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
       "position": [
-        60,
-        -460
+        40,
+        -620
       ]
     },
     {
@@ -722,16 +727,37 @@
     },
     {
       "parameters": {
-        "functionCode": "//Get the updated todoist section ID\nconst section_id = $item(0).$node[\"Globals\"].json[\"body\"][\"event_data\"][\"id\"]\nconst issue_type_id = $item(0).$node[\"Globals\"].json[\"issueTypeId\"]\n\n//Filter only article serries from the JIRA issues response.\nitems.filter(item => item.json.fields.issuetype.id === issue_type_id);\n\n//Get the article serries that was updated from todoist.\nlet item = items.filter(item => item.json.fields.customfield_10039 === section_id);\n\n// You can write logs to the browser console\nconsole.log('Done getting the updated article series!');\n\nreturn item[0].json;"
+        "functionCode": "//Get the updated todoist section ID\nconst section_id = $item(0).$node[\"Article flow settings\"].json[\"body\"][\"event_data\"][\"section_id\"]\nconst issue_type_id = $item(0).$node[\"Article flow settings\"].json[\"seriesTypeId\"]\n\n//Filter only article serries from the JIRA issues response.\nitems.filter(item => item.json.fields.issuetype.id === issue_type_id);\n\n//Get the article serries that was updated from todoist.\nlet item = items.filter(item => item.json.fields.customfield_10039 === section_id);\n\n// You can write logs to the browser console\nconsole.log('Done getting the updated article series!');\n\nreturn item[0].json;"
       },
       "id": "2c1422d0-e145-4163-bcb5-1210074e5350",
       "name": "Get article series in Jira by Todoist ID1",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
       "position": [
-        140,
+        80,
         900
       ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "returnAll": true,
+        "options": {}
+      },
+      "id": "0aa11cd3-1548-41ed-9870-eec544d9788a",
+      "name": "Get all Jira issues4",
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        440,
+        1080
+      ],
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "8",
+          "name": "Jira SW Cloud account"
+        }
+      }
     }
   ],
   "connections": {
@@ -832,7 +858,7 @@
         ],
         [
           {
-            "node": "Get Jira issue by Todoist ID1",
+            "node": "Get all Jira issues4",
             "type": "main",
             "index": 0
           }
@@ -904,6 +930,11 @@
             "node": "Get article series in Jira by Todoist ID",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Get article in Jira by Todoist ID",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -928,13 +959,7 @@
             "index": 0
           }
         ],
-        [
-          {
-            "node": "Create a new article series in Jira2",
-            "type": "main",
-            "index": 0
-          }
-        ],
+        [],
         [
           {
             "node": "Delete an article series in Jira1",
@@ -1010,7 +1035,7 @@
       "main": [
         [
           {
-            "node": "Get article in Jira by Todoist ID",
+            "node": "Check if is task add event",
             "type": "main",
             "index": 0
           }
@@ -1049,10 +1074,21 @@
           }
         ]
       ]
+    },
+    "Get all Jira issues4": {
+      "main": [
+        [
+          {
+            "node": "Get Jira issue by Todoist ID1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "createdAt": "2022-09-15T15:32:06.067Z",
-  "updatedAt": "2022-09-18T17:10:53.212Z",
+  "updatedAt": "2022-09-18T18:55:37.363Z",
   "settings": {},
   "staticData": null,
   "pinData": {},
