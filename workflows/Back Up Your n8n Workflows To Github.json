@@ -107,7 +107,7 @@
       "id": "1ba19a07-fbce-4783-a2cb-f55cf51d4c34",
       "credentials": {
         "githubApi": {
-          "id": "4",
+          "id": "7",
           "name": "GitHub account"
         }
       }
@@ -131,7 +131,7 @@
       "id": "f712615f-9b9f-4756-b9c5-34ad8b3120a2",
       "credentials": {
         "githubApi": {
-          "id": "4",
+          "id": "7",
           "name": "GitHub account"
         }
       }
@@ -302,7 +302,7 @@
       "id": "ee64397d-789a-4090-9b86-a1773dd7c33e",
       "credentials": {
         "githubApi": {
-          "id": "4",
+          "id": "7",
           "name": "GitHub account"
         }
       },
@@ -529,7 +529,7 @@
     }
   },
   "createdAt": "2022-09-17T18:41:00.358Z",
-  "updatedAt": "2022-09-17T18:46:06.388Z",
+  "updatedAt": "2022-09-18T14:13:46.442Z",
   "settings": {},
   "staticData": null,
   "pinData": {},
