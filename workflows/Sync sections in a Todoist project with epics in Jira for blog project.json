@@ -1,7 +1,7 @@
 {
   "id": 1,
   "name": "Sync sections in a Todoist project with epics in Jira for blog project",
-  "active": false,
+  "active": true,
   "nodes": [
     {
       "parameters": {},
@@ -432,7 +432,7 @@
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
       "position": [
-        660,
+        700,
         -240
       ]
     },
@@ -466,27 +466,6 @@
         840,
         -480
       ]
-    },
-    {
-      "parameters": {
-        "operation": "delete",
-        "issueKey": "={{$node[\"Get Jira issue by Todoist ID\"].json[\"key\"]}}",
-        "deleteSubtasks": true
-      },
-      "id": "2a4db5db-8383-4c55-8191-f4bee6481bbc",
-      "name": "Delete an article series in Jira1",
-      "type": "n8n-nodes-base.jira",
-      "typeVersion": 1,
-      "position": [
-        1120,
-        -440
-      ],
-      "credentials": {
-        "jiraSoftwareCloudApi": {
-          "id": "8",
-          "name": "Jira SW Cloud account"
-        }
-      }
     },
     {
       "parameters": {
@@ -635,7 +614,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [
-        440,
+        320,
         -460
       ]
     },
@@ -662,7 +641,7 @@
               }
             ]
           },
-          "parentIssueKey": "="
+          "parentIssueKey": "={{$node[\"Get article in Jira by Todoist ID\"].json[\"key\"]}}"
         }
       },
       "id": "8efdad00-5720-4785-b345-e3fef86e5dbf",
@@ -671,7 +650,7 @@
       "typeVersion": 1,
       "position": [
         1120,
-        -840
+        -800
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -754,6 +733,90 @@
       "position": [
         440,
         1080
+      ],
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "8",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "issueKey": "={{$node[\"Get Jira issue by Todoist ID2\"].json[\"key\"]}}",
+        "updateFields": {
+          "description": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"description\"]}}",
+          "customFieldsUi": {
+            "customFieldsValues": [
+              {
+                "fieldId": "customfield_10041",
+                "fieldValue": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"section_id\"]}}"
+              },
+              {
+                "fieldId": "customfield_10037",
+                "fieldValue": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"id\"]}}"
+              },
+              {
+                "fieldId": "customfield_10038",
+                "fieldValue": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"parent_id\"]}}"
+              }
+            ]
+          },
+          "parentIssueKey": "={{$node[\"Get article in Jira by Todoist ID\"].json[\"key\"]}}",
+          "summary": "={{$node[\"Todoist Event\"].json[\"body\"][\"event_data\"][\"content\"]}}"
+        }
+      },
+      "id": "e28682f0-895c-4438-8fbb-3b23e89b7ded",
+      "name": "Update a task in Jira",
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        -620
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "8",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "issueKey": "={{$node[\"Get Jira issue by Todoist ID2\"].json[\"key\"]}}",
+        "deleteSubtasks": true
+      },
+      "id": "2a4db5db-8383-4c55-8191-f4bee6481bbc",
+      "name": "Delete a task in Jira",
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        -440
+      ],
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "8",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "returnAll": true,
+        "options": {}
+      },
+      "id": "fcb9e772-70cf-4116-99e3-da1a0b30fecd",
+      "name": "Get all Jira issues2",
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        480,
+        -240
       ],
       "credentials": {
         "jiraSoftwareCloudApi": {
@@ -962,10 +1025,16 @@
             "index": 0
           }
         ],
-        [],
         [
           {
-            "node": "Delete an article series in Jira1",
+            "node": "Update a task in Jira",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delete a task in Jira",
             "type": "main",
             "index": 0
           }
@@ -1027,7 +1096,7 @@
         ],
         [
           {
-            "node": "Get Jira issue by Todoist ID2",
+            "node": "Get all Jira issues2",
             "type": "main",
             "index": 0
           }
@@ -1088,10 +1157,31 @@
           }
         ]
       ]
+    },
+    "Get all Jira issues2": {
+      "main": [
+        [
+          {
+            "node": "Get Jira issue by Todoist ID2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a new task in Jira": {
+      "main": [
+        []
+      ]
+    },
+    "Update a task in Jira": {
+      "main": [
+        []
+      ]
     }
   },
   "createdAt": "2022-09-15T15:32:06.067Z",
-  "updatedAt": "2022-09-18T20:22:02.345Z",
+  "updatedAt": "2022-09-19T05:01:56.882Z",
   "settings": {},
   "staticData": null,
   "pinData": {},
